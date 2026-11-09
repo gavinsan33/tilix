@@ -977,43 +977,43 @@
       <summary>Keyboard shortcut to save the current session as a new file</summary>
     </key>
     <key name="session-switch-to-terminal-0" type="s">
-      <default>'&lt;Alt&gt;0'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 0</summary>
     </key>
     <key name="session-switch-to-terminal-1" type="s">
-      <default>'&lt;Alt&gt;1'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 1</summary>
     </key>
     <key name="session-switch-to-terminal-2" type="s">
-      <default>'&lt;Alt&gt;2'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 2</summary>
     </key>
     <key name="session-switch-to-terminal-3" type="s">
-      <default>'&lt;Alt&gt;3'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 3</summary>
     </key>
     <key name="session-switch-to-terminal-4" type="s">
-      <default>'&lt;Alt&gt;4'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 4</summary>
     </key>
     <key name="session-switch-to-terminal-5" type="s">
-      <default>'&lt;Alt&gt;5'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 5</summary>
     </key>
     <key name="session-switch-to-terminal-6" type="s">
-      <default>'&lt;Alt&gt;6'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 6</summary>
     </key>
     <key name="session-switch-to-terminal-7" type="s">
-      <default>'&lt;Alt&gt;7'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 7</summary>
     </key>
     <key name="session-switch-to-terminal-8" type="s">
-      <default>'&lt;Alt&gt;8'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 8</summary>
     </key>
     <key name="session-switch-to-terminal-9" type="s">
-      <default>'&lt;Alt&gt;9'</default>
+      <default>'disabled'</default>
       <summary>Keyboard shortcut to switch to terminal 9</summary>
     </key>
     <key name="session-switch-to-terminal-up" type="s">
@@ -1061,55 +1061,55 @@
       <summary>Keyboard shortcut to add new terminal automatically</summary>
     </key>
     <key name="win-view-sidebar" type="s">
-      <default>'F12'</default>
+      <default>'&lt;Primary&gt;Return'</default>
       <summary>Keyboard shortcut to view session sidebar</summary>
     </key>
     <key name="win-switch-to-session-0" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;0'</default>
+      <default>'&lt;Alt&gt;0'</default>
       <summary>Keyboard shortcut to switch to session 10</summary>
     </key>
     <key name="win-switch-to-session-1" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;1'</default>
+      <default>'&lt;Alt&gt;1'</default>
       <summary>Keyboard shortcut to switch to session 1</summary>
     </key>
     <key name="win-switch-to-session-2" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;2'</default>
+      <default>'&lt;Alt&gt;2'</default>
       <summary>Keyboard shortcut to switch to session 2</summary>
     </key>
     <key name="win-switch-to-session-3" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;3'</default>
+      <default>'&lt;Alt&gt;3'</default>
       <summary>Keyboard shortcut to switch to session 3</summary>
     </key>
     <key name="win-switch-to-session-4" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;4'</default>
+      <default>'&lt;Alt&gt;4'</default>
       <summary>Keyboard shortcut to switch to session 4</summary>
     </key>
     <key name="win-switch-to-session-5" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;5'</default>
+      <default>'&lt;Alt&gt;5'</default>
       <summary>Keyboard shortcut to switch to session 5</summary>
     </key>
     <key name="win-switch-to-session-6" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;6'</default>
+      <default>'&lt;Alt&gt;6'</default>
       <summary>Keyboard shortcut to switch to session 6</summary>
     </key>
     <key name="win-switch-to-session-7" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;7'</default>
+      <default>'&lt;Alt&gt;7'</default>
       <summary>Keyboard shortcut to switch to session 7</summary>
     </key>
     <key name="win-switch-to-session-8" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;8'</default>
+      <default>'&lt;Alt&gt;8'</default>
       <summary>Keyboard shortcut to switch to session 8</summary>
     </key>
     <key name="win-switch-to-session-9" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Alt&gt;9'</default>
+      <default>'&lt;Alt&gt;9'</default>
       <summary>Keyboard shortcut to switch to session 9</summary>
     </key>
     <key name="win-switch-to-next-session" type="s">
-      <default>'&lt;Ctrl&gt;Page_Down'</default>
+      <default>'&lt;Primary&gt;&lt;Shift&gt;Right'</default>
       <summary>Keyboard shortcut to switch to the next session</summary>
     </key>
     <key name="win-switch-to-previous-session" type="s">
-      <default>'&lt;Ctrl&gt;Page_Up'</default>
+      <default>'&lt;Primary&gt;&lt;Shift&gt;Left'</default>
       <summary>Keyboard shortcut to switch to the previous session</summary>
     </key>
     <key name="win-reorder-previous-session" type="s">
@@ -1150,7 +1150,7 @@
       <summary>Keyboard shortcut to set a customize layout options for the terminal</summary>
     </key>
     <key name="terminal-close" type="s">
-      <default>'&lt;Shift&gt;&lt;Ctrl&gt;W'</default>
+      <default>'&lt;Primary&gt;w'</default>
       <summary>Keyboard shortcut to close the terminal</summary>
     </key>
     <key name="terminal-maximize" type="s">
@@ -1170,11 +1170,11 @@
       <summary>Keyboard shortcut to reset the terminal states</summary>
     </key>
     <key name="terminal-reset-and-clear" type="s">
-      <default>'disabled'</default>
+      <default>'&lt;Primary&gt;&lt;Shift&gt;&lt;Alt&gt;l'</default>
       <summary>Keyboard shortcut to reset the terminal states and clear the output buffer</summary>
     </key>
     <key name="terminal-copy" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Shift&gt;c'</default>
+      <default>'&lt;Primary&gt;&lt;Shift&gt;c'</default>
       <summary>Keyboard shortcut to copy selected text in terminal</summary>
     </key>
     <key name="terminal-copy-as-html" type="s">
@@ -1182,7 +1182,7 @@
       <summary>Keyboard shortcut to copy selected text in terminal as HTML</summary>
     </key>
     <key name="terminal-paste" type="s">
-      <default>'&lt;Ctrl&gt;&lt;Shift&gt;v'</default>
+      <default>'&lt;Primary&gt;v'</default>
       <summary>Keyboard shortcut to paste text in terminal from clipboard</summary>
     </key>
     <key name="terminal-paste-primary" type="s">
@@ -1202,7 +1202,7 @@
       <summary>Keyboard shortcut to unselect all text in terminal</summary>
     </key>
     <key name="terminal-zoom-in" type="s">
-      <default>'&lt;Ctrl&gt;plus'</default>
+      <default>'&lt;Primary&gt;equal'</default>
       <summary>Keyboard shortcut to make font larger</summary>
     </key>
     <key name="terminal-zoom-out" type="s">
