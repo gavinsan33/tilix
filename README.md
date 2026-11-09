@@ -3,6 +3,38 @@
 # Tilix
 A tiling terminal emulator for Linux using GTK+ 3. The Tilix web site for users is available at [https://gnunn1.github.io/tilix-web](https://gnunn1.github.io/tilix-web).
 
+## About this fork
+
+This is a fork of [gnunn1/tilix](https://github.com/gnunn1/tilix) with these changes:
+
+* **Drag a session into a split:** open the session sidebar, drag a session's preview onto a terminal in another session, and drop it on the left, right, top or bottom half. The whole session (including its own splits) is merged in as a split there. Dropping a session onto itself is shown in red and does nothing.
+* **Move to New Session:** the terminal title menu has a *Move to New Session* item that moves that terminal out of its split into its own session. It has an optional shortcut in Preferences → Shortcuts.
+* **Different default shortcuts:**
+
+  | Action | This fork | Upstream |
+  |---|---|---|
+  | View session sidebar | Ctrl+Enter | F12 |
+  | Switch to session 1–10 | Alt+1…Alt+0 | Ctrl+Alt+1…Ctrl+Alt+0 |
+  | Switch to terminal 1–10 | disabled | Alt+1…Alt+0 |
+  | Next / previous session | Ctrl+Shift+Right / Left | Ctrl+Page Down / Page Up |
+  | Close terminal | Ctrl+W | Ctrl+Shift+W |
+  | Paste | Ctrl+V | Ctrl+Shift+V |
+  | Zoom in | Ctrl+= | Ctrl++ |
+  | Reset and clear | Ctrl+Shift+Alt+L | disabled |
+
+  Shortcuts you have already customized are kept.
+
+### Install (Fedora)
+
+Packages are built on every push to `master` and published as a dnf repo on GitHub Pages. They replace the Fedora `tilix` package.
+
+```
+sudo dnf config-manager addrepo --from-repofile=https://gavinsan33.github.io/tilix/tilix.repo
+sudo dnf upgrade --refresh tilix   # or: sudo dnf install tilix
+```
+
+The packages are not signed (the repo file sets `gpgcheck=0`). To go back to Fedora's build, remove `/etc/yum.repos.d/tilix.repo` and run `sudo dnf distro-sync tilix`.
+
 > :warning: **Maintainers Wanted**<br/>
 > This project is looking for maintainers!
 > At the moment, only very minimal maintenance is done, no new features will be implemented and pull-requests may be reviewed very slowly.
