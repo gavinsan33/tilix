@@ -745,6 +745,7 @@ private:
 
         session.onClose.connect(&onSessionClose);
         session.onDetach.connect(&onSessionDetach);
+        session.onNewSession.connect(&addSession);
         session.onStateChange.connect(&onSessionStateChange);
         session.onIsActionAllowed.connect(&onIsActionAllowed);
         session.onProcessNotification.connect(&onSessionProcessNotification);
@@ -764,6 +765,7 @@ private:
         //remove event handlers
         session.onClose.disconnect(&onSessionClose);
         session.onDetach.disconnect(&onSessionDetach);
+        session.onNewSession.disconnect(&addSession);
         session.onStateChange.disconnect(&onSessionStateChange);
         session.onIsActionAllowed.disconnect(&onIsActionAllowed);
         session.onProcessNotification.disconnect(&onSessionProcessNotification);

@@ -243,6 +243,7 @@ private:
     Popover pmContext;
 
     SimpleAction saMaximize;
+    SimpleAction saMoveToNewSession;
 
     GSettings gsProfile;
     GSettings gsShortcuts;
@@ -633,6 +634,11 @@ private:
         //Maximize Terminal
         saMaximize = registerActionWithSettings(group, ACTION_PREFIX, ACTION_MAXIMIZE, gsShortcuts, delegate(GVariant, SimpleAction) { toggleMaximize(); });
 
+        //Move terminal out of its split into a new session in this window
+        saMoveToNewSession = registerActionWithSettings(group, ACTION_PREFIX, ACTION_MOVE_TO_NEW_SESSION, gsShortcuts, delegate(GVariant, SimpleAction) {
+            onRequestNewSession.emit(this);
+        });
+
         //Close Terminal Action
         registerActionWithSettings(group, ACTION_PREFIX, ACTION_CLOSE, gsShortcuts, delegate(GVariant, SimpleAction) {
             string name;
@@ -828,6 +834,10 @@ private:
         GMenu menuSection = new GMenu();
         menuSection.append(_("Find…"), getActionDetailedName(ACTION_PREFIX, ACTION_FIND));
         menuSection.append(_("Read-Only"), getActionDetailedName(ACTION_PREFIX, ACTION_READ_ONLY));
+        model.appendSection(null, menuSection);
+
+        menuSection = new GMenu();
+        menuSection.append(_("Move to New Session"), getActionDetailedName(ACTION_PREFIX, ACTION_MOVE_TO_NEW_SESSION));
         model.appendSection(null, menuSection);
 
         // Assistants
@@ -1299,6 +1309,7 @@ private:
             bTitle.hide();
         }
         saMaximize.setEnabled(!_isSingleTerminal);
+        saMoveToNewSession.setEnabled(!_isSingleTerminal);
     }
 
     /**
@@ -4254,6 +4265,11 @@ public:
     * Invoked when a terminal requests that it be detached into it's own window
     */
     GenericEvent!(Terminal, int, int) onRequestDetach;
+
+    /**
+    * Invoked when a terminal requests to be moved into a new session in the same window
+    */
+    GenericEvent!(Terminal) onRequestNewSession;
 
     /**
      * Triggered when the terminal title changes.

@@ -297,6 +297,7 @@ private:
         terminal.onClose.connect(&onTerminalClose);
         terminal.onFocusIn.connect(&onTerminalFocusIn);
         terminal.onRequestDetach.connect(&onTerminalRequestDetach);
+        terminal.onRequestNewSession.connect(&onTerminalRequestNewSession);
         terminal.onRequestMove.connect(&onTerminalRequestMove);
         terminal.onSyncInput.connect(&onTerminalSyncInput);
         terminal.onRequestStateChange.connect(&onTerminalRequestStateChange);
@@ -379,6 +380,7 @@ private:
         terminal.onClose.disconnect(&onTerminalClose);
         terminal.onFocusIn.disconnect(&onTerminalFocusIn);
         terminal.onRequestDetach.disconnect(&onTerminalRequestDetach);
+        terminal.onRequestNewSession.disconnect(&onTerminalRequestNewSession);
         terminal.onRequestMove.disconnect(&onTerminalRequestMove);
         terminal.onSyncInput.disconnect(&onTerminalSyncInput);
         terminal.onRequestStateChange.disconnect(&onTerminalRequestStateChange);
@@ -656,6 +658,15 @@ private:
             sequenceTerminalID();
             showAll();
         }
+    }
+
+    /**
+     * Moves a terminal out of this session into a new session in the same window
+     */
+    void onTerminalRequestNewSession(Terminal terminal) {
+        if (terminals.length < 2) return;
+        removeTerminal(terminal);
+        onNewSession.emit(new Session(this._name, terminal));
     }
 
     /**
@@ -1567,6 +1578,11 @@ public:
      *  isNewSession = Whether this is a new session
      */
     GenericEvent!(Session, int, int, bool) onDetach;
+
+    /**
+     * Triggered when a new session split off from this one should be added to the window
+     */
+    GenericEvent!(Session) onNewSession;
 
     /**
      * Triggered when state changes, such as title, occur

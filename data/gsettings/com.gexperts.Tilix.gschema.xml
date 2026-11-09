@@ -1153,6 +1153,10 @@
       <default>'&lt;Primary&gt;w'</default>
       <summary>Keyboard shortcut to close the terminal</summary>
     </key>
+    <key name="terminal-move-to-new-session" type="s">
+      <default>'disabled'</default>
+      <summary>Keyboard shortcut to move the terminal into a new session</summary>
+    </key>
     <key name="terminal-maximize" type="s">
       <default>'&lt;Shift&gt;&lt;Ctrl&gt;X'</default>
       <summary>Keyboard shortcut to maximize or restore the terminal</summary>
