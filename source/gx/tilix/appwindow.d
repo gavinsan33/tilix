@@ -744,7 +744,6 @@ private:
         Session session = cast(Session) page;
 
         session.onClose.connect(&onSessionClose);
-        session.onAttach.connect(&onSessionAttach);
         session.onDetach.connect(&onSessionDetach);
         session.onStateChange.connect(&onSessionStateChange);
         session.onIsActionAllowed.connect(&onIsActionAllowed);
@@ -764,7 +763,6 @@ private:
 
         //remove event handlers
         session.onClose.disconnect(&onSessionClose);
-        session.onAttach.disconnect(&onSessionAttach);
         session.onDetach.disconnect(&onSessionDetach);
         session.onStateChange.disconnect(&onSessionStateChange);
         session.onIsActionAllowed.disconnect(&onIsActionAllowed);
@@ -926,43 +924,6 @@ private:
                 getCurrentSession().focusRestore();
             }
         }
-    }
-
-    /**
-     * Invoked by DND a session on a terminal
-     */
-    void onSessionAttach(string sessionUUID) {
-
-        AppWindow getWindow(Session session) {
-
-            Widget widget = session.getParent();
-            while (widget !is null) {
-                AppWindow result = cast(AppWindow) widget;
-                if (result !is null)
-                    return result;
-                widget = widget.getParent();
-            }
-            return null;
-        }
-
-        Session session = getSession(sessionUUID);
-        // If session isn't null it already belongs to this window, ignore
-        if (session !is null) return;
-
-        session = cast(Session) tilix.findWidgetForUUID(sessionUUID);
-        if (session is null) {
-            errorf("The session %s could not be located", sessionUUID);
-            return;
-        }
-
-        AppWindow sourceWindow = getWindow(session);
-        if (sourceWindow is null) {
-            errorf("The AppWindow for session %s could not be located", sessionUUID);
-            return;
-        }
-
-        sourceWindow.removeSession(session);
-        addSession(session);
     }
 
     AppWindow cloneWindow() {

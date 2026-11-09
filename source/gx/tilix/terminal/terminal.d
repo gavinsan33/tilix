@@ -1520,8 +1520,8 @@ private:
         onClose.emit(this);
     }
 
-    void notifySessionRequestAttach(string sessionUUID) {
-        onSessionAttach.emit(this, sessionUUID);
+    void notifySessionRequestAttach(string sessionUUID, DragQuadrant dq) {
+        onSessionAttach.emit(this, sessionUUID, dq);
     }
 
 // Block for handling cycling between command prompts
@@ -3317,12 +3317,13 @@ private:
      * quandrant can be highlighted.
      */
     bool onVTEDragMotion(DragContext dc, int x, int y, uint time, Widget widget) {
-        //Is this a terminal drag or something else?
-        if (!dc.listTargets().find(intern(VTE_DND, false))) {
+        //Is this a terminal or session drag or something else?
+        bool isVTE = dc.listTargets().find(intern(VTE_DND, false)) !is null;
+        if (!isVTE && !dc.listTargets().find(intern(SESSION_DND, false))) {
             return true;
         }
         //Don't allow drop on the same terminal or if it is maximized
-        if (isSourceAndDestEqual(dc, this) || terminalWindowState == TerminalWindowState.MAXIMIZED) {
+        if ((isVTE && isSourceAndDestEqual(dc, this)) || terminalWindowState == TerminalWindowState.MAXIMIZED) {
             //trace("Invalid drop");
             return false;
         }
@@ -3444,8 +3445,12 @@ private:
             dragInfo = DragInfo(false, dq);
             break;
         case DropTargets.SESSION:
+            if (terminalWindowState == TerminalWindowState.MAXIMIZED)
+                return;
             string uuid = to!string(data.getDataWithLength()[0 .. $ - 1]);
-            notifySessionRequestAttach(uuid);
+            DragQuadrant dq = getDragQuadrant(x, y, vte);
+            notifySessionRequestAttach(uuid, dq);
+            dragInfo = DragInfo(false, dq);
             break;
         }
     }
@@ -4248,7 +4253,7 @@ public:
     /**
      * Invoked when a session is dropped on the terminal and needs to be attached.
      */
-    GenericEvent!(Terminal, string) onSessionAttach;
+    GenericEvent!(Terminal, string, DragQuadrant) onSessionAttach;
 
     /**
      * Signal that gets generated whenever new output is shown
