@@ -1,0 +1,59 @@
+name: RPM Repo
+
+# Builds the Fedora RPM and publishes it as a dnf repo on GitHub Pages
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: fedora:45
+    steps:
+    - run: dnf -y install git-core make rpm-build createrepo_c 'dnf-command(builddep)'
+
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Build RPMs
+      run: |
+        mkdir -p out repo
+        make -f .copr/Makefile srpm outdir=$PWD/out
+        dnf -y builddep out/*.src.rpm
+        rpmbuild --rebuild --define "_rpmdir $PWD/repo" out/*.src.rpm
+
+    - name: Create repo
+      run: |
+        createrepo_c repo
+        cat > repo/tilix.repo <<EOF
+        [tilix-gavinsan33]
+        name=Tilix (gavinsan33 fork)
+        baseurl=https://gavinsan33.github.io/tilix/
+        enabled=1
+        gpgcheck=0
+        EOF
+
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: repo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - id: deployment
+      uses: actions/deploy-pages@v4
