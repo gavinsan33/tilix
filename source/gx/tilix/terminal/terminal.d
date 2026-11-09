@@ -140,6 +140,7 @@ import gx.tilix.common;
 import gx.tilix.constants;
 import gx.tilix.encoding;
 import gx.tilix.preferences;
+import gx.tilix.sidebar : getDragSessionUUID;
 import gx.tilix.terminal.actions;
 import gx.tilix.terminal.advpaste;
 import gx.tilix.terminal.exvte;
@@ -3322,6 +3323,16 @@ private:
         if (!isVTE && !dc.listTargets().find(intern(SESSION_DND, false))) {
             return true;
         }
+        //Dropping a session on itself does nothing, show that clearly
+        if (!isVTE) {
+            string uuid = getDragSessionUUID(dc);
+            Widget session = uuid is null ? null : tilix.findWidgetForUUID(uuid);
+            if (session !is null && isAncestor(session)) {
+                dragInfo = DragInfo(true, DragQuadrant.LEFT, true);
+                vte.queueDraw();
+                return false;
+            }
+        }
         //Don't allow drop on the same terminal or if it is maximized
         if ((isVTE && isSourceAndDestEqual(dc, this)) || terminalWindowState == TerminalWindowState.MAXIMIZED) {
             //trace("Invalid drop");
@@ -3629,6 +3640,17 @@ private:
         int w = widget.getAllocatedWidth();
         int h = widget.getAllocatedHeight();
         int offset = STROKE_WIDTH;
+        if (dragInfo.invalid) {
+            if (!vte.getStyleContext().lookupColor("error_color", color)) {
+                color.parse("#cc0000");
+            }
+            cr.setSourceRgba(color.red, color.green, color.blue, 0.25);
+            cr.paint();
+            cr.setSourceRgba(color.red, color.green, color.blue, 1.0);
+            cr.rectangle(offset, offset, w - (offset * 2), h - (offset * 2));
+            cr.stroke();
+            return false;
+        }
         final switch (dragInfo.dq) {
         case DragQuadrant.LEFT:
             cr.rectangle(offset, offset, w / 2, h - (offset * 2));
@@ -4471,6 +4493,8 @@ enum DropTargets {
 struct DragInfo {
     bool isDragActive;
     DragQuadrant dq;
+    // Drop not allowed, e.g. a session dragged onto itself
+    bool invalid;
 }
 
 /************************************************************************
