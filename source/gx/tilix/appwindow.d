@@ -785,6 +785,15 @@ private:
     void removeSession(Session session) {
         nb.remove(session);
         updateUIState();
+        // Refresh open sidebar previews, e.g. after a session was merged into another
+        if (!useTabs && sb.getRevealChild() && nb.getNPages() > 0) {
+            threadsAddIdleDelegate(delegate() {
+                if (sb.getRevealChild() && getCurrentSession() !is null) {
+                    sb.populateSessions(getSessions(), getCurrentSession().uuid, sessionNotifications, nb.getAllocatedWidth(), nb.getAllocatedHeight());
+                }
+                return false;
+            });
+        }
         //Close Window if there are no pages
         if (nb.getNPages() == 0) {
             if (gsSettings.getBoolean(SETTINGS_CLOSE_WITH_LAST_SESSION_KEY)) {
