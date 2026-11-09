@@ -744,8 +744,8 @@ private:
         Session session = cast(Session) page;
 
         session.onClose.connect(&onSessionClose);
-        session.onAttach.connect(&onSessionAttach);
         session.onDetach.connect(&onSessionDetach);
+        session.onNewSession.connect(&addSession);
         session.onStateChange.connect(&onSessionStateChange);
         session.onIsActionAllowed.connect(&onIsActionAllowed);
         session.onProcessNotification.connect(&onSessionProcessNotification);
@@ -764,8 +764,8 @@ private:
 
         //remove event handlers
         session.onClose.disconnect(&onSessionClose);
-        session.onAttach.disconnect(&onSessionAttach);
         session.onDetach.disconnect(&onSessionDetach);
+        session.onNewSession.disconnect(&addSession);
         session.onStateChange.disconnect(&onSessionStateChange);
         session.onIsActionAllowed.disconnect(&onIsActionAllowed);
         session.onProcessNotification.disconnect(&onSessionProcessNotification);
@@ -787,6 +787,15 @@ private:
     void removeSession(Session session) {
         nb.remove(session);
         updateUIState();
+        // Refresh open sidebar previews, e.g. after a session was merged into another
+        if (!useTabs && sb.getRevealChild() && nb.getNPages() > 0) {
+            threadsAddIdleDelegate(delegate() {
+                if (sb.getRevealChild() && getCurrentSession() !is null) {
+                    sb.populateSessions(getSessions(), getCurrentSession().uuid, sessionNotifications, nb.getAllocatedWidth(), nb.getAllocatedHeight());
+                }
+                return false;
+            });
+        }
         //Close Window if there are no pages
         if (nb.getNPages() == 0) {
             if (gsSettings.getBoolean(SETTINGS_CLOSE_WITH_LAST_SESSION_KEY)) {
@@ -926,43 +935,6 @@ private:
                 getCurrentSession().focusRestore();
             }
         }
-    }
-
-    /**
-     * Invoked by DND a session on a terminal
-     */
-    void onSessionAttach(string sessionUUID) {
-
-        AppWindow getWindow(Session session) {
-
-            Widget widget = session.getParent();
-            while (widget !is null) {
-                AppWindow result = cast(AppWindow) widget;
-                if (result !is null)
-                    return result;
-                widget = widget.getParent();
-            }
-            return null;
-        }
-
-        Session session = getSession(sessionUUID);
-        // If session isn't null it already belongs to this window, ignore
-        if (session !is null) return;
-
-        session = cast(Session) tilix.findWidgetForUUID(sessionUUID);
-        if (session is null) {
-            errorf("The session %s could not be located", sessionUUID);
-            return;
-        }
-
-        AppWindow sourceWindow = getWindow(session);
-        if (sourceWindow is null) {
-            errorf("The AppWindow for session %s could not be located", sessionUUID);
-            return;
-        }
-
-        sourceWindow.removeSession(session);
-        addSession(session);
     }
 
     AppWindow cloneWindow() {

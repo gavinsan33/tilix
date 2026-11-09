@@ -454,6 +454,16 @@ public:
     GenericEvent!(string, int, int) onSessionDetach;
 }
 
+/**
+ * UUID of the session whose sidebar preview is being dragged, or null
+ * if the drag did not come from the sidebar
+ */
+string getDragSessionUUID(DragContext dc) {
+    Widget source = DragAndDrop.dragGetSourceWidget(dc);
+    SideBarRow row = source is null ? null : cast(SideBarRow) source.getParent();
+    return row is null ? null : row.sessionUUID;
+}
+
 private:
 
 class SideBarRow : ListBoxRow {

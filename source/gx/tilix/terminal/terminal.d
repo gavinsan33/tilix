@@ -140,6 +140,7 @@ import gx.tilix.common;
 import gx.tilix.constants;
 import gx.tilix.encoding;
 import gx.tilix.preferences;
+import gx.tilix.sidebar : getDragSessionUUID;
 import gx.tilix.terminal.actions;
 import gx.tilix.terminal.advpaste;
 import gx.tilix.terminal.exvte;
@@ -242,6 +243,7 @@ private:
     Popover pmContext;
 
     SimpleAction saMaximize;
+    SimpleAction saMoveToNewSession;
 
     GSettings gsProfile;
     GSettings gsShortcuts;
@@ -632,6 +634,11 @@ private:
         //Maximize Terminal
         saMaximize = registerActionWithSettings(group, ACTION_PREFIX, ACTION_MAXIMIZE, gsShortcuts, delegate(GVariant, SimpleAction) { toggleMaximize(); });
 
+        //Move terminal out of its split into a new session in this window
+        saMoveToNewSession = registerActionWithSettings(group, ACTION_PREFIX, ACTION_MOVE_TO_NEW_SESSION, gsShortcuts, delegate(GVariant, SimpleAction) {
+            onRequestNewSession.emit(this);
+        });
+
         //Close Terminal Action
         registerActionWithSettings(group, ACTION_PREFIX, ACTION_CLOSE, gsShortcuts, delegate(GVariant, SimpleAction) {
             string name;
@@ -827,6 +834,10 @@ private:
         GMenu menuSection = new GMenu();
         menuSection.append(_("Find…"), getActionDetailedName(ACTION_PREFIX, ACTION_FIND));
         menuSection.append(_("Read-Only"), getActionDetailedName(ACTION_PREFIX, ACTION_READ_ONLY));
+        model.appendSection(null, menuSection);
+
+        menuSection = new GMenu();
+        menuSection.append(_("Move to New Session"), getActionDetailedName(ACTION_PREFIX, ACTION_MOVE_TO_NEW_SESSION));
         model.appendSection(null, menuSection);
 
         // Assistants
@@ -1298,6 +1309,7 @@ private:
             bTitle.hide();
         }
         saMaximize.setEnabled(!_isSingleTerminal);
+        saMoveToNewSession.setEnabled(!_isSingleTerminal);
     }
 
     /**
@@ -1520,8 +1532,8 @@ private:
         onClose.emit(this);
     }
 
-    void notifySessionRequestAttach(string sessionUUID) {
-        onSessionAttach.emit(this, sessionUUID);
+    void notifySessionRequestAttach(string sessionUUID, DragQuadrant dq) {
+        onSessionAttach.emit(this, sessionUUID, dq);
     }
 
 // Block for handling cycling between command prompts
@@ -3317,12 +3329,23 @@ private:
      * quandrant can be highlighted.
      */
     bool onVTEDragMotion(DragContext dc, int x, int y, uint time, Widget widget) {
-        //Is this a terminal drag or something else?
-        if (!dc.listTargets().find(intern(VTE_DND, false))) {
+        //Is this a terminal or session drag or something else?
+        bool isVTE = dc.listTargets().find(intern(VTE_DND, false)) !is null;
+        if (!isVTE && !dc.listTargets().find(intern(SESSION_DND, false))) {
             return true;
         }
+        //Dropping a session on itself does nothing, show that clearly
+        if (!isVTE) {
+            string uuid = getDragSessionUUID(dc);
+            Widget session = uuid is null ? null : tilix.findWidgetForUUID(uuid);
+            if (session !is null && isAncestor(session)) {
+                dragInfo = DragInfo(true, DragQuadrant.LEFT, true);
+                vte.queueDraw();
+                return false;
+            }
+        }
         //Don't allow drop on the same terminal or if it is maximized
-        if (isSourceAndDestEqual(dc, this) || terminalWindowState == TerminalWindowState.MAXIMIZED) {
+        if ((isVTE && isSourceAndDestEqual(dc, this)) || terminalWindowState == TerminalWindowState.MAXIMIZED) {
             //trace("Invalid drop");
             return false;
         }
@@ -3444,8 +3467,12 @@ private:
             dragInfo = DragInfo(false, dq);
             break;
         case DropTargets.SESSION:
+            if (terminalWindowState == TerminalWindowState.MAXIMIZED)
+                return;
             string uuid = to!string(data.getDataWithLength()[0 .. $ - 1]);
-            notifySessionRequestAttach(uuid);
+            DragQuadrant dq = getDragQuadrant(x, y, vte);
+            notifySessionRequestAttach(uuid, dq);
+            dragInfo = DragInfo(false, dq);
             break;
         }
     }
@@ -3624,6 +3651,17 @@ private:
         int w = widget.getAllocatedWidth();
         int h = widget.getAllocatedHeight();
         int offset = STROKE_WIDTH;
+        if (dragInfo.invalid) {
+            if (!vte.getStyleContext().lookupColor("error_color", color)) {
+                color.parse("#cc0000");
+            }
+            cr.setSourceRgba(color.red, color.green, color.blue, 0.25);
+            cr.paint();
+            cr.setSourceRgba(color.red, color.green, color.blue, 1.0);
+            cr.rectangle(offset, offset, w - (offset * 2), h - (offset * 2));
+            cr.stroke();
+            return false;
+        }
         final switch (dragInfo.dq) {
         case DragQuadrant.LEFT:
             cr.rectangle(offset, offset, w / 2, h - (offset * 2));
@@ -4229,6 +4267,11 @@ public:
     GenericEvent!(Terminal, int, int) onRequestDetach;
 
     /**
+    * Invoked when a terminal requests to be moved into a new session in the same window
+    */
+    GenericEvent!(Terminal) onRequestNewSession;
+
+    /**
      * Triggered when the terminal title changes.
      */
     GenericEvent!(Terminal) onTitleChange;
@@ -4248,7 +4291,7 @@ public:
     /**
      * Invoked when a session is dropped on the terminal and needs to be attached.
      */
-    GenericEvent!(Terminal, string) onSessionAttach;
+    GenericEvent!(Terminal, string, DragQuadrant) onSessionAttach;
 
     /**
      * Signal that gets generated whenever new output is shown
@@ -4466,6 +4509,8 @@ enum DropTargets {
 struct DragInfo {
     bool isDragActive;
     DragQuadrant dq;
+    // Drop not allowed, e.g. a session dragged onto itself
+    bool invalid;
 }
 
 /************************************************************************

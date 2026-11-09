@@ -297,6 +297,7 @@ private:
         terminal.onClose.connect(&onTerminalClose);
         terminal.onFocusIn.connect(&onTerminalFocusIn);
         terminal.onRequestDetach.connect(&onTerminalRequestDetach);
+        terminal.onRequestNewSession.connect(&onTerminalRequestNewSession);
         terminal.onRequestMove.connect(&onTerminalRequestMove);
         terminal.onSyncInput.connect(&onTerminalSyncInput);
         terminal.onRequestStateChange.connect(&onTerminalRequestStateChange);
@@ -379,6 +380,7 @@ private:
         terminal.onClose.disconnect(&onTerminalClose);
         terminal.onFocusIn.disconnect(&onTerminalFocusIn);
         terminal.onRequestDetach.disconnect(&onTerminalRequestDetach);
+        terminal.onRequestNewSession.disconnect(&onTerminalRequestNewSession);
         terminal.onRequestMove.disconnect(&onTerminalRequestMove);
         terminal.onSyncInput.disconnect(&onTerminalSyncInput);
         terminal.onRequestStateChange.disconnect(&onTerminalRequestStateChange);
@@ -504,7 +506,7 @@ private:
      * Inserts a source terminal into a destination by creating the necessary
      * splitters and box shims
      */
-    void insertTerminal(Terminal dest, Terminal src, Orientation orientation, int child) {
+    void insertTerminal(Terminal dest, Widget src, Orientation orientation, int child) {
         Box parent = cast(Box) dest.getParent();
         int height = parent.getAllocatedHeight();
         int width = parent.getAllocatedWidth();
@@ -538,7 +540,28 @@ private:
         parent.add(paned);
         parent.showAll();
         //Fix for issue #33
-        focusTerminal(src.terminalID);
+        if (Terminal t = cast(Terminal) src) focusTerminal(t.terminalID);
+    }
+
+    /**
+     * Inserts src (a terminal or a whole layout) as a split of dest on the side given by dq
+     */
+    void insertAtQuadrant(Terminal dest, Widget src, DragQuadrant dq) {
+        Orientation orientation = (dq == DragQuadrant.TOP || dq == DragQuadrant.BOTTOM) ? Orientation.VERTICAL : Orientation.HORIZONTAL;
+        int child = (dq == DragQuadrant.TOP || dq == DragQuadrant.LEFT) ? 1 : 2;
+        insertTerminal(dest, src, orientation, child);
+    }
+
+    /**
+     * Removes this session's whole layout (terminals and splitters) so it
+     * can be merged into another session. Session is left empty.
+     */
+    Widget releaseLayout() {
+        if (maximizedInfo.isMaximized) restoreTerminal(maximizedInfo.terminal);
+        foreach (t; terminals.dup) removeTerminalReferences(t);
+        Widget layout = gx.gtk.util.getChildren!(Widget)(groupChild, false)[0];
+        groupChild.remove(layout);
+        return layout;
     }
 
     void onTerminalRequestMove(string srcUUID, Terminal dest, DragQuadrant dq) {
@@ -578,11 +601,7 @@ private:
             //Add terminal to this one
             addTerminal(src);
         }
-        Orientation orientation = (dq == DragQuadrant.TOP || dq == DragQuadrant.BOTTOM) ? Orientation.VERTICAL : Orientation.HORIZONTAL;
-        int child = (dq == DragQuadrant.TOP || dq == DragQuadrant.LEFT) ? 1 : 2;
-        //Inserting terminal
-        //trace(format("Inserting terminal orient=$d, child=$d", orientation, child));
-        insertTerminal(dest, src, orientation, child);
+        insertAtQuadrant(dest, src, dq);
     }
 
     void closeTerminal(Terminal terminal) {
@@ -641,8 +660,33 @@ private:
         }
     }
 
-    void onTerminalSessionAttach(Terminal terminal, string sessionUUID) {
-        onAttach.emit(sessionUUID);
+    /**
+     * Moves a terminal out of this session into a new session in the same window
+     */
+    void onTerminalRequestNewSession(Terminal terminal) {
+        if (terminals.length < 2) return;
+        removeTerminal(terminal);
+        onNewSession.emit(new Session(this._name, terminal));
+    }
+
+    /**
+     * A session was dropped on one of our terminals, merge its whole layout
+     * in as a split on the side it was dropped
+     */
+    void onTerminalSessionAttach(Terminal dest, string sessionUUID, DragQuadrant dq) {
+        Session src = cast(Session) tilix.findWidgetForUUID(sessionUUID);
+        if (src is null || src is this) return;
+        // Defer until the drag finishes, closing src destroys the sidebar row being dragged
+        threadsAddIdleDelegate(delegate() {
+            if (findTerminal(dest.uuid) is null || src.terminals.length == 0) return false;
+            Terminal[] moved = src.terminals.dup;
+            Widget layout = src.releaseLayout();
+            foreach (t; moved) addTerminal(t);
+            insertAtQuadrant(dest, layout, dq);
+            focusTerminal(moved[0].terminalID);
+            src.notifySessionClose();
+            return false;
+        });
     }
 
     void onTerminalFocusIn(Terminal terminal) {
@@ -1536,12 +1580,9 @@ public:
     GenericEvent!(Session, int, int, bool) onDetach;
 
     /**
-     * Occurs when a session requests to be attached
-     *
-     * Params:
-     *  sessionUUID = The UUID of the session to be attached
+     * Triggered when a new session split off from this one should be added to the window
      */
-    GenericEvent!(string) onAttach;
+    GenericEvent!(Session) onNewSession;
 
     /**
      * Triggered when state changes, such as title, occur

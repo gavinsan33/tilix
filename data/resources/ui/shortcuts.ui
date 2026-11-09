@@ -528,6 +528,12 @@
               </object>
             </child>
             <child>
+              <object class="GtkShortcutsShortcut" id ="terminal-move-to-new-session">
+                <property name="visible">1</property>
+                <property name="title" translatable="yes" context="shortcut window">Move terminal to new session</property>
+              </object>
+            </child>
+            <child>
               <object class="GtkShortcutsShortcut" id ="terminal-profile-preference">
                 <property name="visible">1</property>
                 <property name="title" translatable="yes" context="shortcut window">Current profile preferences</property>
