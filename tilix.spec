@@ -10,7 +10,7 @@
 %undefine _hardened_build
 
 Name:           tilix
-# snapshot (commit count + hash) is defined by .copr/Makefile
+# snapshot (commit count + hash) is prepended by .copr/Makefile
 Version:        1.9.7^%{?snapshot}%{!?snapshot:0}
 Release:        1%{?dist}
 Summary:        Tiling terminal emulator
